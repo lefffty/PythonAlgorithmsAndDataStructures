@@ -1,9 +1,11 @@
 import copy as cp
-from typing import Literal
+from typing import Literal, Annotated
 import sys
 
 
 class OneWayListNode:
+    value: Annotated[int, 'значение, хранящееся в узле']
+
     def __init__(self, value: int):
         """
         Конструктор объекта узла
@@ -150,6 +152,14 @@ class TwoWayLinkedList:
             temp = temp.next
         return None
 
+    def isSorted(self) -> bool:
+        temp = self.head
+        while temp:
+            if temp.value > temp.next.value:
+                return False
+            temp = temp.next
+        return True
+
     def __sort(self, order=Literal["asc", "desc"]):
         pass
 
@@ -173,40 +183,44 @@ class TwoWayLinkedList:
 
 
 class OneWayLinkedList:
+    head: Annotated[OneWayListNode, 'Вершина списка']
+    tail: Annotated[OneWayListNode, 'Конец списка']
+    _size: Annotated[int, 'Длина списка']
+
     def __init__(self):
         """
         Конструктор
         """
-        self.head = None
+        self.head = None  # вершина списка
         self.tail = None
         self._size = 0
 
-    def addElementFront(self, node: OneWayListNode):
+    def pushFront(self, value: int):
         """
         Добавление элемента в начало связного списка
         """
+        node = OneWayListNode(value)
         if not self.size():
             self.head = node
             self.tail = node
             self._size = 1
             return self
-
         temp = self.head
         self.head = node
         self.head.next = temp
         self._size += 1
         return self
 
-    def addElementBack(self, node: OneWayListNode):
+    def pushBack(self, value: int):
         """
         Добавление элемента в конец связного списка
         """
+        node = OneWayListNode(value)
         if not self.size():
             self.head = node
             self.tail = node
             self._size += 1
             return self
-
         self.tail.next = node
         self.tail = node
         self._size += 1
@@ -239,6 +253,17 @@ class OneWayLinkedList:
             second_node.value,
             first_node.value
         )
+
+    def isSorted(self) -> bool:
+        """
+        Отсортирован ли список
+        """
+        temp = self.head
+        while temp.next:
+            if temp.value > temp.next.value:
+                return False
+            temp = temp.next
+        return True
 
     def __sort(self) -> None:
         """
@@ -320,8 +345,8 @@ class OneWayLinkedList:
         Расширение списка множеством значений
         """
         for arg in args:
-            arg = OneWayListNode(arg)
-            self.addElementBack(arg)
+            node = OneWayListNode(arg)
+            self.addElementBack(node)
         return self
 
     def merge(self, other_list):
@@ -345,6 +370,11 @@ class OneWayLinkedList:
 
 
 if __name__ == '__main__':
-    ls = CyclicTwoWayLinkedList()
-    ls.push(1).push(2).push(3).push(4).push(5).push(6)
+    ls = OneWayLinkedList()
+    ls.pushFront(4).pushFront(3).pushFront(
+        2).pushFront(1).pushFront(0)
     print(ls)
+    print(ls.isSorted())
+    ls.pushFront(6)
+    print(ls)
+    print(ls.isSorted())
