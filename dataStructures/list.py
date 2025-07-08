@@ -1,6 +1,6 @@
 import copy as cp
-from typing import Literal, Annotated
 import sys
+from typing import Literal, Annotated
 
 
 class OneWayListNode:
@@ -22,21 +22,33 @@ class OneWayListNode:
 
 class TwoWayListNode:
     def __init__(self, value: int):
+        """
+        Конструктор объекта узла
+        """
         self.value = value
         self.next = None
         self.prev = None
 
     def __repr__(self):
+        """
+        Строковое представление узла
+        """
         return f'Value: {self.value}'
 
 
 class CyclicTwoWayLinkedList:
     def __init__(self):
+        """
+        Конструктор списка
+        """
         self.head = None
         self.tail = None
         self.__size = 0
 
     def push(self, value):
+        """
+        Добавление в конец списка
+        """
         node = TwoWayListNode(value)
         if not self.__size:
             self.head = node
@@ -52,6 +64,8 @@ class CyclicTwoWayLinkedList:
         return self
 
     def __repr__(self):
+        """
+        """
         visited = []
         temp = self.head
         result = '<--> '
@@ -153,6 +167,9 @@ class TwoWayLinkedList:
         return None
 
     def isSorted(self) -> bool:
+        """
+        Проверка на отсортированность списка
+        """
         temp = self.head
         while temp:
             if temp.value > temp.next.value:
@@ -161,6 +178,8 @@ class TwoWayLinkedList:
         return True
 
     def __sort(self, order=Literal["asc", "desc"]):
+        """
+        """
         pass
 
     # def insertNode(self, value):
