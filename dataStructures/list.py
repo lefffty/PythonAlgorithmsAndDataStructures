@@ -1,4 +1,31 @@
-import copy
+import copy as cp
+from abc import ABCMeta, abstractmethod
+import sys
+
+
+class TwoWayListNode:
+    def __init__(self, value: int):
+        self.value = value
+        self.next = None
+        self.prev = None
+
+    def __repr__(self):
+        return f'Value: {self.value}'
+
+
+class LinkedListABC(metaclass=ABCMeta):
+    @abstractmethod
+    def copy(self):
+        pass
+
+    @abstractmethod
+    def size(self) -> int:
+        pass
+
+
+class TwoWayLinkedList:
+    def __init__(self):
+        pass
 
 
 class OneWayListNode:
@@ -16,7 +43,7 @@ class OneWayListNode:
         return f'Value: {self.value}'
 
 
-class OneWayLinkedList:
+class OneWayLinkedList(LinkedListABC):
     def __init__(self):
         """
         Конструктор
@@ -102,7 +129,7 @@ class OneWayLinkedList:
         new_list = OneWayLinkedList()
         temp = self.head
         while temp:
-            new_list.addElementBack(copy.copy(temp))
+            new_list.addElementBack(cp.copy(temp))
             temp = temp.next
         return new_list
 
@@ -118,16 +145,77 @@ class OneWayLinkedList:
         res += 'NULL'
         return res
 
+    def find(self, value) -> bool:
+        """
+        Поиск элемента в списке
+        """
+        if not self._size:
+            return False
+        temp = self.head
+        while temp:
+            if temp.value == value:
+                return True
+            temp = temp.next
+        return False
+
+    def findMax(self):
+        """
+        Поиск максимального элемента в списке
+        """
+        if not self._size:
+            return None
+        temp = self.head
+        target = -sys.maxsize - 1
+        while temp:
+            if temp.value > target:
+                target = temp.value
+            temp = temp.next
+        return target
+
+    def findMin(self):
+        """
+        Поиск минимального элемента в списке
+        """
+        if not self._size:
+            return None
+        temp = self.head
+        target = sys.maxsize - 1
+        while temp:
+            if temp.value < target:
+                target = temp.value
+            temp = temp.next
+        return target
+
+    def extend(self, *args):
+        """
+        Расширение списка множеством значений
+        """
+        for arg in args:
+            arg = OneWayListNode(arg)
+            self.addElementBack(arg)
+        return self
+
+    def merge(self, other_list):
+        """
+        Слияние двух списков
+        """
+        pass
+
+    def reverse(self):
+        """
+        Реверсирование списка
+        """
+        pass
+
 
 if __name__ == '__main__':
     ls = OneWayLinkedList()
-    ls.addElementBack(OneWayListNode(1)).addElementBack(
-        OneWayListNode(2)).addElementBack(OneWayListNode(3)).addElementBack(
-        OneWayListNode(4)).addElementBack(OneWayListNode(5))
-    ls.addElementFront(OneWayListNode(0)).addElementFront(
-        OneWayListNode(-1)).addElementFront(OneWayListNode(-2))
-    print(ls, ls.size())
-    new_ls = ls.copy()
-    new_ls.pop()
-    new_ls.pop()
-    print(new_ls, new_ls.size())
+    ls.addElementBack(OneWayListNode(5)).addElementBack(
+        OneWayListNode(1)).addElementBack(OneWayListNode(21)).addElementBack(
+        OneWayListNode(3)).addElementBack(OneWayListNode(-1))
+    ls.addElementFront(OneWayListNode(-5)).addElementFront(
+        OneWayListNode(-2)).addElementFront(OneWayListNode(-8))
+    print(ls)
+    print(ls.findMax())
+    print(ls.findMin())
+    print(ls.find(22))
