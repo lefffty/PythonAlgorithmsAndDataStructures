@@ -1,5 +1,6 @@
 import copy as cp
 from abc import ABCMeta, abstractmethod
+from typing import Literal
 import sys
 
 
@@ -25,7 +26,107 @@ class LinkedListABC(metaclass=ABCMeta):
 
 class TwoWayLinkedList:
     def __init__(self):
+        """
+        Конструктор двусвязного списка
+        """
+        self.head = None
+        self.tail = None
+        self.__size = 0
+
+    def pushFront(self, value):
+        """
+        Добавление в конец
+        """
+        node = TwoWayListNode(value)
+        if not self.__size:
+            self.head = node
+            self.tail = node
+            self.__size += 1
+            return self
+        temp = self.head
+        self.head = node
+        self.head.prev, self.head.next = None, temp
+        return self
+
+    def pushBack(self, value):
+        """
+        Добавление в начало
+        """
+        node = TwoWayListNode(value)
+        if not self.__size:
+            self.head = node
+            self.tail = node
+            self.__size += 1
+            return self
+        temp = self.tail
+        self.tail = node
+        temp.next = self.tail
+        self.tail.prev, self.tail.next = temp, None
+        return self
+
+    def popBack(self) -> int:
+        """
+        Удаление хвоста
+        """
+        temp = self.tail
+        self.tail = temp.prev
+        self.tail.next = None
+        item = temp.value
+        del temp
+        return item
+
+    def popFront(self):
+        """
+        Удаление вершины
+        """
+        temp = self.head
+        self.head = temp.next
+        self.head.prev = None
+        item = temp.value
+        del temp
+        return item
+
+    def popElement(self, value):
+        """
+        Удаление элемента по значению
+        """
+        temp = self.head
+        while temp:
+            if temp.value == value:
+                match temp:
+                    case self.head:
+                        return self.popFront()
+                    case self.tail:
+                        return self.popBack()
+                    case _:
+                        temp.prev.next = temp.next
+                        temp.next.prev = temp.prev
+                        item = temp.value
+                        del temp
+                        return item
+            temp = temp.next
+        return None
+
+    def __sort(self, order=Literal["asc", "desc"]):
         pass
+
+    # def insertNode(self, value):
+    #     temp = self.tail if self.head.value < value else self.head
+    #     operation_counter = 0
+    #     while temp:
+    #         if ''
+
+    def __repr__(self) -> str:
+        """
+        Строковое представление списка
+        """
+        res = 'NULL <--> '
+        temp = self.head
+        while temp:
+            res += f'{temp.value} <--> '
+            temp = temp.next
+        res += 'NULL'
+        return res
 
 
 class OneWayListNode:
@@ -56,7 +157,7 @@ class OneWayLinkedList(LinkedListABC):
         """
         Добавление элемента в начало связного списка
         """
-        if not self.size():  # если список пуст - инициализируем первый элемент списка
+        if not self.size():
             self.head = node
             self.tail = node
             self._size = 1
@@ -72,7 +173,7 @@ class OneWayLinkedList(LinkedListABC):
         """
         Добавление элемента в конец связного списка
         """
-        if not self.size():  # если список пуст - инициализируем первый элемент списка
+        if not self.size():
             self.head = node
             self.tail = node
             self._size += 1
@@ -199,7 +300,8 @@ class OneWayLinkedList(LinkedListABC):
         """
         Слияние двух списков
         """
-        pass
+        self.tail.next = other_list.head
+        return self
 
     def reverse(self):
         """
@@ -207,15 +309,17 @@ class OneWayLinkedList(LinkedListABC):
         """
         pass
 
+    def hasCycle(self):
+        """
+        Есть ли цикл в списке
+        """
+        pass
+
 
 if __name__ == '__main__':
-    ls = OneWayLinkedList()
-    ls.addElementBack(OneWayListNode(5)).addElementBack(
-        OneWayListNode(1)).addElementBack(OneWayListNode(21)).addElementBack(
-        OneWayListNode(3)).addElementBack(OneWayListNode(-1))
-    ls.addElementFront(OneWayListNode(-5)).addElementFront(
-        OneWayListNode(-2)).addElementFront(OneWayListNode(-8))
+    ls = TwoWayLinkedList()
+    ls.pushFront(3).pushFront(2).pushFront(1)
+    ls.pushBack(4).pushBack(5).pushBack(6).pushBack(7)
     print(ls)
-    print(ls.findMax())
-    print(ls.findMin())
-    print(ls.find(22))
+    print(ls.popElement(4))
+    print(ls)
