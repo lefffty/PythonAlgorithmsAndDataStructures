@@ -1,7 +1,21 @@
 import copy as cp
-from abc import ABCMeta, abstractmethod
 from typing import Literal
 import sys
+
+
+class OneWayListNode:
+    def __init__(self, value: int):
+        """
+        Конструктор объекта узла
+        """
+        self.value = value
+        self.next = None
+
+    def __repr__(self) -> str:
+        """
+        Строковое представление узла
+        """
+        return f'Value: {self.value}'
 
 
 class TwoWayListNode:
@@ -14,14 +28,38 @@ class TwoWayListNode:
         return f'Value: {self.value}'
 
 
-class LinkedListABC(metaclass=ABCMeta):
-    @abstractmethod
-    def copy(self):
-        pass
+class CyclicTwoWayLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.__size = 0
 
-    @abstractmethod
-    def size(self) -> int:
-        pass
+    def push(self, value):
+        node = TwoWayListNode(value)
+        if not self.__size:
+            self.head = node
+            self.tail = node
+            self.__size += 1
+            return self
+        temp = self.tail
+        self.tail = node
+        self.tail.prev = temp
+        self.tail.next = self.head
+        temp.next = self.tail
+        self.head.prev = self.tail
+        return self
+
+    def __repr__(self):
+        visited = []
+        temp = self.head
+        result = '<--> '
+        while temp:
+            if temp in visited:
+                break
+            result += f'{temp.value} <--> '
+            visited.append(temp)
+            temp = temp.next
+        return result
 
 
 class TwoWayLinkedList:
@@ -46,6 +84,7 @@ class TwoWayLinkedList:
         temp = self.head
         self.head = node
         self.head.prev, self.head.next = None, temp
+        self.__size += 1
         return self
 
     def pushBack(self, value):
@@ -62,6 +101,7 @@ class TwoWayLinkedList:
         self.tail = node
         temp.next = self.tail
         self.tail.prev, self.tail.next = temp, None
+        self.__size += 1
         return self
 
     def popBack(self) -> int:
@@ -73,6 +113,7 @@ class TwoWayLinkedList:
         self.tail.next = None
         item = temp.value
         del temp
+        self.__size -= 1
         return item
 
     def popFront(self):
@@ -84,6 +125,7 @@ class TwoWayLinkedList:
         self.head.prev = None
         item = temp.value
         del temp
+        self.__size -= 1
         return item
 
     def popElement(self, value):
@@ -103,6 +145,7 @@ class TwoWayLinkedList:
                         temp.next.prev = temp.prev
                         item = temp.value
                         del temp
+                        self.__size -= 1
                         return item
             temp = temp.next
         return None
@@ -129,22 +172,7 @@ class TwoWayLinkedList:
         return res
 
 
-class OneWayListNode:
-    def __init__(self, value: int):
-        """
-        Конструктор объекта узла
-        """
-        self.value = value
-        self.next = None
-
-    def __repr__(self) -> str:
-        """
-        Строковое представление узла
-        """
-        return f'Value: {self.value}'
-
-
-class OneWayLinkedList(LinkedListABC):
+class OneWayLinkedList:
     def __init__(self):
         """
         Конструктор
@@ -317,9 +345,6 @@ class OneWayLinkedList(LinkedListABC):
 
 
 if __name__ == '__main__':
-    ls = TwoWayLinkedList()
-    ls.pushFront(3).pushFront(2).pushFront(1)
-    ls.pushBack(4).pushBack(5).pushBack(6).pushBack(7)
-    print(ls)
-    print(ls.popElement(4))
+    ls = CyclicTwoWayLinkedList()
+    ls.push(1).push(2).push(3).push(4).push(5).push(6)
     print(ls)
