@@ -1,15 +1,17 @@
 from list import OneWayListNode, OneWayLinkedList
 
 
-class Stack(OneWayLinkedList):
+class Stack:
     def __init__(self):
-        super().__init__()
+        self.head = None
+        self._size = 0
 
     def push(self, value: int):
         node = OneWayListNode(value)
         temp = self.head
         self.head = node
-        self.head.next = temp
+        if self.head.next:
+            self.head.next = temp
         self._size += 1
         return self
 

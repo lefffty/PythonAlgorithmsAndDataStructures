@@ -36,6 +36,42 @@ class TwoWayListNode:
         return f'Value: {self.value}'
 
 
+class Stack:
+    def __init__(self):
+        self.head = None
+        self._size = 0
+
+    def push(self, value: int):
+        node = OneWayListNode(value)
+        temp = self.head
+        self.head = node
+        self.head.next = temp
+        self._size += 1
+        return self
+
+    def pop(self) -> OneWayListNode:
+        item = self.head
+        if self.head.next:
+            self.head = self.head.next
+        self._size -= 1
+        return item
+
+    def peek(self) -> int:
+        return self.head.value
+
+    def isEmpty(self) -> int:
+        return self._size == 0
+
+    def __repr__(self):
+        temp = self.head
+        res = ''
+        while temp:
+            res += f'{temp.value} -> '
+            temp = temp.next
+        res += 'NULL'
+        return res
+
+
 class CyclicTwoWayLinkedList:
     def __init__(self):
         """
@@ -245,6 +281,22 @@ class OneWayLinkedList:
         self._size += 1
         return self
 
+    def reverse(self):
+        """
+        Реверсирование списка
+        """
+        stack = Stack()
+        temp = self.head
+        while temp:
+            stack.push(temp.value)
+            temp = temp.next
+        temp = self.head
+        while temp:
+            value = stack.pop().value
+            temp.value = value
+            temp = temp.next
+        return self
+
     def size(self) -> int:
         """
         Размер списка
@@ -375,12 +427,6 @@ class OneWayLinkedList:
         self.tail.next = other_list.head
         return self
 
-    def reverse(self):
-        """
-        Реверсирование списка
-        """
-        pass
-
     def hasCycle(self):
         """
         Есть ли цикл в списке
@@ -390,10 +436,7 @@ class OneWayLinkedList:
 
 if __name__ == '__main__':
     ls = OneWayLinkedList()
-    ls.pushFront(4).pushFront(3).pushFront(
-        2).pushFront(1).pushFront(0)
+    ls.pushFront(3).pushFront(2).pushFront(1)
     print(ls)
-    print(ls.isSorted())
-    ls.pushFront(6)
+    ls.reverse()
     print(ls)
-    print(ls.isSorted())
