@@ -64,16 +64,85 @@ class Queue:
 
 class Deque:
     def __init__(self):
-        pass
+        self.__head = None
+        self.__tail = None
+        self.__size = 0
+
+    def push_front(self, value):
+        node = Node(value)
+        if not self.__size:
+            self.__head = node
+            self.__tail = node
+            self.__size += 1
+            return self
+        temp = self.__head
+        self.__head = node
+        self.__head.next = temp
+        temp.prev = self.__head
+        self.__size += 1
+        return self
+
+    def push_back(self, value):
+        node = Node(value)
+        if not self.__size:
+            self.__head = node
+            self.__tail = node
+            self.__size += 1
+            return self
+        temp = self.__tail
+        self.__tail = node
+        self.__tail.prev = temp
+        temp.next = self.__tail
+        self.__size += 1
+        return self
+
+    def peek_front(self):
+        return self.__head.value
+
+    def peek_back(self):
+        return self.__tail.value
+
+    def pop_front(self):
+        item = self.__head
+        if self.__size == 1:
+            self.__head, self.__tail, self.__size = None, None, 0
+            return item
+        self.__head = self.__head.next
+        self.__size -= 1
+        return item
+
+    def pop_back(self):
+        item = self.__tail
+        if self.__size == 1:
+            self.__head, self.__tail, self.__size = None, None, 0
+            return item
+        self.__tail = item.prev
+        self.__tail.next = None
+        self.__size -= 1
+        return item
+
+    def is_empty(self):
+        return self.__size == 0
+
+    def size(self):
+        return self.__size
+
+    def __repr__(self):
+        res = 'NULL -> '
+        temp = self.__head
+        while temp:
+            res += f'{temp.value} -> '
+            temp = temp.next
+        res += 'NULL'
+        return res
 
 
 if __name__ == '__main__':
-    q = Queue()
-    q.enqueue(1)
-    q.enqueue(2)
-    q.enqueue(3)
-    q.enqueue(4)
-    q.dequeue()
-    q.dequeue()
-    print(q)
-
+    deq = Deque()
+    deq.push_back(1)
+    deq.push_back(2)
+    deq.push_back(3)
+    deq.push_back(1)
+    deq.push_front(0)
+    deq.push_front(0)
+    print(deq)
