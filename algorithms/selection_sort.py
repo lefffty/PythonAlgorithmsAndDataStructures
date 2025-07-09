@@ -1,9 +1,9 @@
 def selection_sort(numbers: list):
     for i in range(0, len(numbers)):
-        for k in range(i, 0, -1):
-            if numbers[k] < numbers[k-1]:
-                numbers[k], numbers[k-1] = numbers[k-1], numbers[k]
+        for j in range(i, len(numbers)):
+            if numbers[i] > numbers[j]:
+                numbers[i], numbers[j] = numbers[j], numbers[i]
     return numbers
 
 
-print(selection_sort([2, 1, 3, 5, 6, 7, 3, 2, 8, 6, 4, 1, 1]))
+print(selection_sort([9, 4, 8, 2, 4, 9, 6, 4, 7, 3, 2]))
