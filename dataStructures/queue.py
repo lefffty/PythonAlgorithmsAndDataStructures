@@ -1,3 +1,8 @@
+from typing import Generic, TypeVar
+
+T = TypeVar('T')
+
+
 class Node:
     def __init__(self, value):
         self.value = value
@@ -5,7 +10,7 @@ class Node:
         self.prev = None
 
 
-class Queue:
+class Queue(Generic[T]):
     def __init__(self):
         """
         Конструктор
@@ -20,11 +25,11 @@ class Queue:
         """
         return self.__size
 
-    def enqueue(self, value):
+    def enqueue(self, *args, **kwargs):
         """
         Добавить элемент в очереди
         """
-        node = Node(value)
+        node = T(*args, **kwargs)
         if self.isEmpty():
             self.__head = node
             self.__tail = node
@@ -37,7 +42,7 @@ class Queue:
         self.__size += 1
         return self
 
-    def dequeue(self) -> Node:
+    def dequeue(self) -> T:
         """
         Удалить элемент из очереди
         """

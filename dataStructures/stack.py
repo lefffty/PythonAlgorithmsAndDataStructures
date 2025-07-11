@@ -1,4 +1,4 @@
-from list import OneWayListNode
+from dataStructures.list.onewaylinkedlist import OneWayListNode
 
 
 class Stack:
