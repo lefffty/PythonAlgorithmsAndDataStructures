@@ -3,12 +3,6 @@ Float = float
 Bool = bool
 
 
-class TreeNode:
-    def __init__(self, value):
-        self.value = value
-        self.childs = []
-
-
 class BinarySearchTreeNode:
     def __init__(self, value):
         self.value = value
@@ -17,6 +11,9 @@ class BinarySearchTreeNode:
 
     def is_terminal(self) -> Bool:
         return not (self.left_child and self.right_child)
+
+    def __repr__(self):
+        return f'Value: {self.value}'
 
 
 class BinarySearchTree:
@@ -141,6 +138,39 @@ class BinarySearchTree:
             if node.right_child:
                 queue.insert(0, node.right_child)
 
+    # лево - центр - право
+    def inOrderTraversal(self):
+        ans = []
+        stack = []
+        current = self.root
+        while current is not None or stack:
+            while current is not None:
+                stack.append(current)
+                current = current.left_child
+            current = stack.pop()
+            ans.append(current.value)
+            current = current.right_child
+        return ans
+
+    # центр - лево - право
+    def preOrderTraversal(self):
+        if not self.root:
+            return []
+        ans = []
+        stack = [self.root]
+        while stack:
+            current = stack.pop()
+            ans.append(current.value)
+            if current.right_child:
+                stack.append(current.right_child)
+            if current.left_child:
+                stack.append(current.left_child)
+        return ans
+
+    # лево - право - центр
+    def postOrderTraversal(self):
+        pass
+
 
 tree = BinarySearchTree()
 tree.insert(2)
@@ -148,4 +178,5 @@ tree.insert(4)
 tree.insert(1)
 tree.insert(3)
 tree.insert(3.5)
-tree.breadthSearch()
+print(tree.inOrderTraversal())
+print(tree.preOrderTraversal())
