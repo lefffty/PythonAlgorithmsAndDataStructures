@@ -78,7 +78,7 @@ class BinarySearchTree:
         elif node.right_child and not node.left_child:
             node = node.right_child
         # если есть оба потомка
-        elif node.left_child and node.right_child:
+        else:
             # если у левого потомка нет правого потомка,
             # то на место удаляемого узла ставим левого потомка
             if not node.left_child.right_child:
