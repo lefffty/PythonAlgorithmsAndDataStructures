@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from reprlib import repr
-from time import sleep
 
 
 class List(metaclass=ABCMeta):
