@@ -126,7 +126,7 @@ class BinarySearchTree:
 
     def depthSearch(self):
         """
-        Поиск в ширину
+        Поиск в глубину
         """
         queue = []
         queue.insert(0, self.root)
