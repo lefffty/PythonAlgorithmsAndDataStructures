@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from collections import deque
+from random import randint
 
 
 @dataclass
@@ -146,6 +147,23 @@ def remove(root: AVLTreeNode, value):
 
 
 def breadth_first_search(root: AVLTreeNode):
+    """
+    BreadthFirstSearch traversal in AVL-Tree
+
+    Example:
+            6
+           / \
+          3   8
+         / \
+        1   4
+    >>> depth_first_search(root)
+    Output:
+        AVLTreeNode(6)
+        AVLTreeNode(3)
+        AVLTreeNode(1)
+        AVLTreeNode(4)
+        AVLTreeNode(8)
+    """
     if not root:
         return
     queue = deque([root])
@@ -157,10 +175,27 @@ def breadth_first_search(root: AVLTreeNode):
             queue.append(node.left)
         if node.right:
             queue.append(node.right)
-    return ', '.join(reprs)
+    return '\n'.join(reprs)
 
 
 def depth_first_search(root: AVLTreeNode):
+    """
+    DepthFirstSearch traversal in AVL-Tree
+
+    Example:
+            6
+           / \
+          3   8
+         / \
+        1   4
+    >>> depth_first_search(root)
+    Output:
+        AVLTreeNode(6)
+        AVLTreeNode(3)
+        AVLTreeNode(8)
+        AVLTreeNode(1)
+        AVLTreeNode(4)
+    """
     if not root:
         return
     queue = deque([root])
@@ -172,16 +207,78 @@ def depth_first_search(root: AVLTreeNode):
             queue.appendleft(node.right)
         if node.left:
             queue.appendleft(node.left)
-    return ', '.join(reprs)
+    return '\n'.join(reprs)
 
 
-root = AVLTreeNode(5)
-insert(root, 3)
-insert(root, 7)
-insert(root, 10)
-insert(root, 12)
-insert(root, 1)
-insert(root, 2)
+def in_order_traversal(root: AVLTreeNode):
+    """
+    Left - Center - right traversal
 
-print(breadth_first_search(root))
-print(depth_first_search(root))
+    Example:
+            6
+           / \
+          3   8
+         / \
+        1   4
+    >>> in_order_traversal(root)
+    Output:
+        AVLTreeNode(1)
+        AVLTreeNode(3)
+        AVLTreeNode(4)
+        AVLTreeNode(6)
+        AVLTreeNode(8)
+    """
+    if not root:
+        return
+    in_order_traversal(root.left)
+    print(root)
+    in_order_traversal(root.right)
+
+
+def pre_order_traversal(root: AVLTreeNode):
+    """
+    Center - Left - Right traversal
+            6
+           / \
+          3   8
+         / \
+        1   4
+    >>> pre_order_traversal(root)
+    Output:
+        AVLTreeNode(6)
+        AVLTreeNode(3)
+        AVLTreeNode(1)
+        AVLTreeNode(4)
+        AVLTreeNode(8)
+    """
+    if not root:
+        return
+    print(root)
+    pre_order_traversal(root.left)
+    pre_order_traversal(root.right)
+
+
+def post_order_traversal(root: AVLTreeNode):
+    """
+    Left - Right - Center traversal
+            6
+           / \
+          3   8
+         / \
+        1   4
+    >>> post_order_traversal(root)
+    Output:
+        AVLTreeNode(1)
+        AVLTreeNode(4)
+        AVLTreeNode(3)
+        AVLTreeNode(8)
+        AVLTreeNode(6)
+    """
+    if not root:
+        return
+    post_order_traversal(root.left)
+    post_order_traversal(root.right)
+    print(root)
+
+
+    

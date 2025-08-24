@@ -1,3 +1,6 @@
+from collections.abc import Iterable
+
+
 class TrieNode:
     def __init__(self):
         self.children = {}
@@ -16,6 +19,10 @@ class Trie:
             current = current.children[letter]
         current.is_end_of_word = True
 
+    def insert_many(self, words: Iterable[str]):
+        for word in words:
+            self.insert(word)
+
     def search(self, word):
         current = self.root
         for letter in word:
@@ -31,3 +38,7 @@ class Trie:
                 return False
             current = current.children[letter]
         return True
+
+
+trie = Trie()
+trie.insert_many(['factor', 'Benjamin', 'format', 'thread', 'tornado'])
