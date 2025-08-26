@@ -13,7 +13,7 @@ class DisjointSet:
         yroot = self.find(y)
 
         if xroot == yroot:
-            return True
+            return False
         if self.rank[xroot] < self.rank[yroot]:
             self.parent[xroot] = yroot
         elif self.rank[xroot] > self.rank[yroot]:
@@ -21,3 +21,4 @@ class DisjointSet:
         else:
             self.parent[xroot] = yroot
             self.rank[yroot] += 1
+        return True
