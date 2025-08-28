@@ -135,7 +135,7 @@ def kruskal_algorithm(
 def dijkstra(
     graph: MutableMapping[str, List[Vertex]],
     source: str
-) -> Tuple[MutableMapping[str, float], MutableMapping[str, str]]:
+) -> Tuple[MutableMapping, MutableMapping]:
     dist = {vertex: float('inf') for vertex in graph}
     prev = {vertex: None for vertex in graph}
     dist[source] = 0
@@ -155,17 +155,3 @@ def dijkstra(
                 heapq.heappush(min_heap, (alt, v))
 
     return dist, prev
-
-
-# edges = parse_edges()
-# cities = read_cities()
-# encoder, decoder = encode_decode_cities(cities)
-# encode_cities(encoder, edges)
-
-# mst = kruskal_algorithm(edges, len(cities))
-# decode_cities(decoder, mst)
-# pprint(mst)
-graph = parse_adjaency_matrix_to_graph('adj_graph_matrix.txt')
-dist, prev = dijkstra(graph, 'A')
-pprint(dist)
-pprint(prev)

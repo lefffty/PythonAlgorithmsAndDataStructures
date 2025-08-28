@@ -1,5 +1,8 @@
+from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 from typing import MutableMapping, List, Tuple
 from collections import defaultdict, namedtuple, deque
+from functools import reduce
 import heapq
 import os
 import pprint
@@ -14,21 +17,21 @@ class DisjointSet:
     """
 
     def __init__(self, _num):
-        self.parent = list(range(_num))
-        self.rank = [1] * _num
+        self._parent = list(range(_num))
+        self._rank = [1] * _num
 
     def find(self, u: int) -> int:
-        """Find parent for given node
+        """Find _parent for given node
 
         Args:
             u (int): node
 
         Returns:
-            int: parent
+            int: _parent
         """
-        if self.parent[u] != u:
-            self.parent[u] = self.find(self.parent[u])
-        return self.parent[u]
+        if self._parent[u] != u:
+            self._parent[u] = self.find(self._parent[u])
+        return self._parent[u]
 
     def union(self, u: int, v: int) -> bool:
         """Checks, if two nodes are whether in the same
@@ -47,95 +50,26 @@ class DisjointSet:
 
         if uroot == vroot:
             return False
-        if self.rank[uroot] < self.rank[vroot]:
-            self.parent[uroot] = vroot
-        elif self.rank[uroot] > self.rank[vroot]:
-            self.parent[vroot] = uroot
+        if self._rank[uroot] < self._rank[vroot]:
+            self._parent[uroot] = vroot
+        elif self._rank[uroot] > self._rank[vroot]:
+            self._parent[vroot] = uroot
         else:
-            self.parent[vroot] = uroot
-            self.rank[uroot] += 1
+            self._parent[vroot] = uroot
+            self._rank[uroot] += 1
         return True
 
 
 class Graph:
-    def __init__(self):
-        self.graph: MutableMapping[str, List[Vertex]
-                                   ] = defaultdict(list[Vertex])
+    def __init__(self, directed=False):
+        self.graph = defaultdict(list[Vertex])
+        self.directed = directed
 
-    def parse_contiguity_lists_to_graph(self, filename: str) -> None:
-        """Parsing contiguity lists to graph
+    def parse_to_graph(self, filename: str, parser: GraphParser):
+        parser.parse_to_graph(filename, self)
 
-        Args:
-            filename (str): name of file which contains lists of contiguity
-        """
-        path = os.path.join('graph_views', filename)
-        lines = (line for line in open(
-            path, 'r', encoding='utf-8').readlines())
-        for line in lines:
-            left_vertex_bound = line.find('[')
-            right_vertex_bound = line.find(']')
-            vertex = line[left_vertex_bound + 1: right_vertex_bound]
-            edges = line[right_vertex_bound + 4:].split('->')
-            for edge in edges:
-                edge = edge.strip()
-                self.graph[vertex].append(Vertex(edge[0], edge[2]))
-
-    def parse_incidence_matrix_to_graph(self, filename: str) -> None:
-        """Parsing incidence matrix to graph
-
-        Args:
-            filename (str): name of file
-        """
-        matrix = []
-        path = os.path.join('graph_views', filename)
-        lines = (line for line in open(
-            path, 'r', encoding='utf-8').readlines())
-        for line in lines:
-            matrix.append([int(weight) for weight in line.split()])
-        for row in range(len(matrix)):
-            for col in range(len(matrix[0])):
-                if matrix[row][col] != 0:
-                    self.graph[chr(ord('a') + row)].append(
-                        Vertex(
-                            vertex=chr(ord('a') + col),
-                            weight=matrix[row][col],
-                        )
-                    )
-
-    def parse_adjaency_matrix_to_graph(self, filename: str) -> None:
-        """Parsing adjaency matrix to graph
-
-        Args:
-            filename (str): name of file
-        """
-        path = os.path.join('graph_views', filename)
-        matrix = []
-        lines = (line for line in open(
-            path, 'r', encoding='utf-8').readlines())
-        for line in lines:
-            matrix.append([int(weight) for weight in line.split(' ')])
-        for row in range(len(matrix)):
-            for col in range(len(matrix[0])):
-                if matrix[row][col] != 0:
-                    self.graph[chr(ord("A") + row)].append(
-                        Vertex(
-                            chr(ord("A") + col),
-                            matrix[row][col]
-                        )
-                    )
-
-    def parse_list_of_edges_to_graph(self, filename: str) -> None:
-        """Parsing list of edges to graph
-
-        Args:
-            filename (str): name of file
-        """
-        path = os.path.join('graph_views', filename)
-        lines = (line for line in open(path,
-                                       'r', encoding='utf-8').readlines())
-        for line in lines:
-            u, v, weight = line[1:-2].split(',')
-            self.graph[u].append(Vertex(v, int(weight)))
+    def parse_from_graph(self, filename: str, parser: GraphParser):
+        parser.parse_from_graph(filename, self)
 
     def prim_algorithm(self, start: str) -> List[Edge]:
         """Implementation of Prim`s algorithm
@@ -193,10 +127,11 @@ class Graph:
         Returns:
             List[Tuple[int, int, float]]: list of edges
         """
-        if not graph:
+        if not self.graph:
             raise ValueError
         encoder, _ = self._encode_vertices(list(self.graph.keys()))
-        edges = [(encoder[u], encoder[v], weight) for u, vertices in self.graph.items()
+        edges = [(encoder[u], encoder[v], weight)
+                 for u, vertices in self.graph.items()
                  for v, weight in vertices]
         return edges
 
@@ -292,10 +227,199 @@ class Graph:
                     queue.appendleft(v)
         return ' -> '.join(ordered_visited)
 
+    def graph_to_contiguity_list(self):
+        result = ''
+        for u in self.graph:
+            result += (f'[{u}] -> ' +
+                       ' -> '.join([f'{v}:{weight}'
+                                    for v, weight in self.graph[u]]) + '\n')
+        return result
 
-graph = Graph()
-graph.parse_adjaency_matrix_to_graph('adjaency matrix.txt')
-bfs = graph.breadth_first_search('A')
-dfs = graph.depth_first_search('A')
-pprint.pprint(bfs)
-pprint.pprint(dfs)
+    def graph_to_adjaency_matrix(self):
+        pass
+
+    def graph_to_edges_lists(self):
+        result = ''
+        template = '[{},{},{}]\n'
+        for u in self.graph:
+            for v, weight in self.graph[u]:
+                result += template.format(u, v, weight)
+        return result
+
+    def get_unique_edges(self) -> set[Edge]:
+        edges = set()
+        for u in self.graph:
+            for v, weight in self.graph[u]:
+                if (v, u, weight) not in edges:
+                    edges.add(Edge(u, v, weight))
+        return edges
+
+    def __repr__(self):
+        edges = self.get_unique_edges()
+        return (f'Graph({[(u, v) for u, v, _ in edges]}, '
+                f'edges={len(edges)}, vertices={list(self.graph.keys())})')
+
+
+class GraphParser(metaclass=ABCMeta):
+    file_folder = 'graph_views'
+
+    @abstractmethod
+    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+        pass
+
+    @abstractmethod
+    def parse_from_graph(self, filename: str, graph: Graph):
+        pass
+
+
+class AdjacencyMatrixParser(GraphParser):
+
+    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+        """Parsing adjaency matrix to graph
+
+        Args:
+            filename (str): name of file
+        """
+        path = os.path.join(self.file_folder, filename)
+        matrix = []
+        lines = (line for line in open(
+            path, 'r', encoding='utf-8').readlines())
+        for line in lines:
+            matrix.append([int(weight) for weight in line.split(' ')])
+        for row in range(len(matrix)):
+            for col in range(len(matrix[0])):
+                if matrix[row][col] != 0:
+                    graph.graph[chr(ord("A") + row)].append(
+                        Vertex(
+                            chr(ord("A") + col),
+                            matrix[row][col]
+                        )
+                    )
+
+    def parse_from_graph(self, filename: str, graph: Graph):
+        num_vertices = len(graph.graph.keys())
+        matrix = [[0 for _ in range(num_vertices)]
+                  for _ in range(num_vertices)]
+        for u in graph.graph:
+            for v, weight in graph.graph[u]:
+                matrix[ord(u) - ord('A')][ord(v) - ord('A')] = weight
+        result = ''
+        for row in matrix:
+            temp = ''
+            for item in row:
+                temp += f'{str(item)} '
+            temp = temp[:-1] + '\n'
+            result += temp
+        result = result[:-1]
+        path = os.path.join(self.file_folder, filename)
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write(result)
+
+
+class EdgeListsParser(GraphParser):
+    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+        """Parsing list of edges to graph
+
+        Args:
+            filename (str): name of file
+        """
+        path = os.path.join(self.file_folder, filename)
+        lines = (line for line in open(path,
+                                       'r', encoding='utf-8').readlines())
+        for line in lines:
+            u, v, weight = line[1:-2].split(',')
+            graph.graph[u].append(Vertex(v, int(weight)))
+
+    def parse_from_graph(self, filename: str, graph: Graph):
+        result = ''
+        template = '[{},{},{}]\n'
+        for u in graph.graph:
+            for v, weight in graph.graph[u]:
+                result += template.format(u, v, weight)
+        path = os.path.join(self.file_folder, filename)
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write(result)
+
+
+class ContiguityListsParser(GraphParser):
+    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+        """Parsing contiguity lists to graph
+
+        Args:
+            filename (str): name of file which contains lists of contiguity
+        """
+        path = os.path.join(self.file_folder, filename)
+        lines = (line for line in open(
+            path, 'r', encoding='utf-8').readlines())
+        for line in lines:
+            left_vertex_bound = line.find('[')
+            right_vertex_bound = line.find(']')
+            vertex = line[left_vertex_bound + 1: right_vertex_bound]
+            edges = line[right_vertex_bound + 4:].split('->')
+            for edge in edges:
+                edge = edge.strip()
+                try:
+                    graph.graph[vertex].append(Vertex(edge[0], float(edge[2])))
+                except ValueError:
+                    raise ValueError(
+                        'Edge`s weight should be integer or float')
+
+    def parse_from_graph(self, filename: str, graph: Graph):
+        result = ''
+        for u in graph.graph:
+            result += (f'[{u}] -> ' +
+                       ' -> '.join([f'{v}:{int(weight)}'
+                                    for v, weight in graph.graph[u]]) + '\n')
+        result = result[:-1]
+        path = os.path.join(self.file_folder, filename)
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write(result)
+
+
+class IncidenceMatrixParser(GraphParser):
+    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+        """Parsing incidence matrix to graph
+
+        Args:
+            filename (str): name of file
+        """
+        matrix = []
+        path = os.path.join(self.file_folder, filename)
+        lines = (line for line in open(
+            path, 'r', encoding='utf-8').readlines())
+        for line in lines:
+            matrix.append([int(weight) for weight in line.split()])
+        for row in range(len(matrix)):
+            for col in range(len(matrix[0])):
+                if matrix[row][col] != 0:
+                    graph.graph[chr(ord('a') + row)].append(
+                        Vertex(
+                            vertex=chr(ord('a') + col),
+                            weight=matrix[row][col],
+                        )
+                    )
+
+    def parse_from_graph(self, filename: str, graph: Graph):
+        num_rows = reduce(lambda x: len(graph.graph[x]), graph.graph)
+        matrix = [[0 for _ in range(len(graph.graph))]
+                  for _ in range(num_rows)]
+        # for u in graph.graph:
+        #     for i in range(len(graph.graph[u])):
+        #         matrix[ord(chr(u)) + ]
+        path = os.path.join(self.file_folder, filename)
+        result = ''
+        with open(path, 'w', encoding='utf-8') as file:
+            file.write(result)
+
+
+files_to_read = ['from adjacency matrix.txt', 'from contiguity lists.txt',
+                 'from edges lists.txt', 'from incidence matrix.txt']
+files_to_write = ['to adjacency matrix.txt', 'to contiguity lists.txt',
+                  'to edges lists.txt', 'to incidence matrix.txt']
+parsers = [AdjacencyMatrixParser(), ContiguityListsParser(),
+           EdgeListsParser(), IncidenceMatrixParser()]
+for read_path, write_path, parser in zip(files_to_read, files_to_write, parsers):
+    graph = Graph()
+    graph.parse_to_graph(read_path, parser)
+    pprint.pprint(graph.graph)
+    graph.parse_from_graph(write_path, parser)
