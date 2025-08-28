@@ -1,7 +1,6 @@
 from typing import MutableMapping, List, Tuple, Union
 from collections import namedtuple, defaultdict
 from dataStructures.advanced.djs import DisjointSet
-from dataclasses import dataclass
 from pprint import pprint
 import heapq
 import json
@@ -13,7 +12,6 @@ Edge = namedtuple('Edge', ['start', 'finish', 'weight'])
 
 def parse_adjaency_matrix_to_graph(filename: str):
     """
-
     """
     matrix = []
     with open(filename, 'r', encoding='utf-8') as file:
@@ -109,7 +107,11 @@ def encode_cities(encoder: MutableMapping[str, int], edges: List[Edge]):
 
 
 def decode_cities(decoder: MutableMapping[int, str], edges: List[Edge]):
-    pass
+    for i in range(len(edges)):
+        decoded_start = decoder[edges[i].start]
+        decoded_finish = decoder[edges[i].finish]
+        weight = edges[i].weight
+        edges[i] = Edge(decoded_start, decoded_finish, weight)
 
 
 def kruskal_algorithm(
@@ -130,10 +132,40 @@ def kruskal_algorithm(
     return mst_edges
 
 
-edges = parse_edges()
-cities = read_cities()
-encoder, decoder = encode_decode_cities(cities)
-encode_cities(encoder, edges)
+def dijkstra(
+    graph: MutableMapping[str, List[Vertex]],
+    source: str
+) -> Tuple[MutableMapping[str, float], MutableMapping[str, str]]:
+    dist = {vertex: float('inf') for vertex in graph}
+    prev = {vertex: None for vertex in graph}
+    dist[source] = 0
+    min_heap = [(0, source)]
 
-mst = kruskal_algorithm(edges, len(cities))
-pprint(mst)
+    while min_heap:
+        current_dist, u = heapq.heappop(min_heap)
+
+        if current_dist > dist[u]:
+            continue
+
+        for v, weight in graph[u]:
+            alt = current_dist + weight
+            if alt < dist[v]:
+                dist[v] = alt
+                prev[v] = u
+                heapq.heappush(min_heap, (alt, v))
+
+    return dist, prev
+
+
+# edges = parse_edges()
+# cities = read_cities()
+# encoder, decoder = encode_decode_cities(cities)
+# encode_cities(encoder, edges)
+
+# mst = kruskal_algorithm(edges, len(cities))
+# decode_cities(decoder, mst)
+# pprint(mst)
+graph = parse_adjaency_matrix_to_graph('adj_graph_matrix.txt')
+dist, prev = dijkstra(graph, 'A')
+pprint(dist)
+pprint(prev)
