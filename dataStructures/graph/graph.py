@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from typing import MutableMapping, List, Tuple, Generator
+from typing import MutableMapping, List, Tuple, Generator, Any
 from collections import defaultdict, namedtuple, deque
 import heapq
 import os
@@ -111,8 +111,8 @@ class Graph:
             print(f'Vertex "{vertex}" is not present in graph!')
             return -1
 
-    def parse_to_graph(self, filename: str, parser: GraphParser) -> None:
-        parser.parse_to_graph(filename, self)
+    def parse_to_graph(self, filename: str, parser: GraphParser, vertices_filename: str = None) -> None:
+        parser.parse_to_graph(filename, self, vertices_filename)
 
     def parse_from_graph(self, filename: str, parser: GraphParser) -> None:
         parser.parse_from_graph(filename, self)
@@ -148,9 +148,9 @@ class Graph:
 
         return mst_edges
 
+    @staticmethod
     def _encode_vertices(
-        self,
-        vertices: List[str]
+            vertices: List[str]
     ) -> Tuple[MutableMapping, MutableMapping]:
         """Creates encoder and decoder of vertices for DisjointSet
 
@@ -209,7 +209,7 @@ class Graph:
         return mst_edges
 
     def dijkstra_algorithm(self, source: str) -> MutableMapping[str, float]:
-        """Implementation of Dijkstra`a algorithm
+        """Implementation of Dijkstra algorithm
 
         Args:
             source (str): initial vertex
@@ -283,20 +283,34 @@ class GraphParser(metaclass=ABCMeta):
     file_folder = 'graph_views'
 
     def _read_file(
-        self,
-        filename: str
-    ) -> Generator[str, None, None]:
+            self,
+            filename: str,
+            vertices_filename: str = None,
+    ) -> Tuple[Generator[str, Any, None] | None, List[str] | None]:
         try:
             path = os.path.join(self.file_folder, filename)
             lines = (line for line in open(
                 path, 'r', encoding='utf-8').readlines())
-            return lines
+            names = None
+            if vertices_filename:
+                try:
+                    vertices_path = os.path.join(self.file_folder, vertices_filename)
+                    names = open(vertices_path, 'r', encoding='utf-8').readline().split(' ')
+                except FileNotFoundError:
+                    print('File does not exist!')
+                    return
+            return lines, names
         except FileNotFoundError:
-            print('File doesn`t exist!')
+            print('File does not exist!')
             return
 
+    @staticmethod
+    def _decode_vertices_names(names: List[str]):
+        decoder = {code: name for code, name in enumerate(names)}
+        return decoder
+
     @abstractmethod
-    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+    def parse_to_graph(self, filename: str, graph: Graph, vertices_filename: str = None) -> None:
         pass
 
     @abstractmethod
@@ -306,13 +320,15 @@ class GraphParser(metaclass=ABCMeta):
 
 class AdjacencyMatrixParser(GraphParser):
 
-    def parse_to_graph(self, filename: str, graph: Graph) -> None:
-        """Parsing adjaency matrix to graph
+    def parse_to_graph(self, filename: str, graph: Graph, vertices_filename: str = None) -> None:
+        """Parsing adjacency matrix to graph
 
         Args:
             filename (str): name of file
+            graph (Graph): instance of graph
+            vertices_filename (str): name of file for vertices name`s
         """
-        lines = self._read_file(filename)
+        lines, names = self._read_file(filename, vertices_filename)
         if lines:
             matrix = []
             for line in lines:
@@ -320,10 +336,17 @@ class AdjacencyMatrixParser(GraphParser):
             for row in range(len(matrix)):
                 for col in range(len(matrix[0])):
                     if matrix[row][col] != 0:
-                        graph.graph[chr(ord("A") + row)].append(
+                        if names:
+                            decoder = self._decode_vertices_names(names)
+                            source = decoder[row]
+                            dest = decoder[col]
+                        else:
+                            source = chr(ord("A") + row)
+                            dest = chr(ord("A") + col)
+                        graph.graph[source].append(
                             Vertex(
-                                chr(ord("A") + col),
-                                matrix[row][col]
+                                dest,
+                                matrix[row][col],
                             )
                         )
         else:
@@ -351,13 +374,15 @@ class AdjacencyMatrixParser(GraphParser):
 
 
 class EdgeListsParser(GraphParser):
-    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+    def parse_to_graph(self, filename: str, graph: Graph, vertices_filename: str = None) -> None:
         """Parsing list of edges to graph
 
         Args:
             filename (str): name of file
+            graph (Graph): graph instance
+            vertices_filename (str): name of file for vertices name`s
         """
-        lines = self._read_file(filename)
+        lines, names = self._read_file(filename, vertices_filename)
         if lines:
             for line in lines:
                 u, v, weight = line[1:-2].split(',')
@@ -378,13 +403,15 @@ class EdgeListsParser(GraphParser):
 
 
 class ContiguityListsParser(GraphParser):
-    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+    def parse_to_graph(self, filename: str, graph: Graph, vertices_filename: str = None) -> None:
         """Parsing contiguity lists to graph
 
         Args:
             filename (str): name of file which contains lists of contiguity
+            graph (Graph): graph instance
+            vertices_filename (str): name of file for vertices name`s
         """
-        lines = self._read_file(filename)
+        lines, names = self._read_file(filename, vertices_filename)
         if lines:
             for line in lines:
                 left_vertex_bound = line.find('[')
@@ -416,13 +443,15 @@ class ContiguityListsParser(GraphParser):
 
 
 class IncidenceMatrixParser(GraphParser):
-    def parse_to_graph(self, filename: str, graph: Graph) -> None:
+    def parse_to_graph(self, filename: str, graph: Graph, vertices_filename: str = None) -> None:
         """Parsing incidence matrix to graph
 
         Args:
             filename (str): name of file
+            graph (Graph): graph instance
+            vertices_filename (str): name of file for vertices name`s
         """
-        lines = self._read_file(filename)
+        lines, names = self._read_file(filename, vertices_filename)
         if lines:
             matrix = []
             for line in lines:
@@ -441,7 +470,13 @@ class IncidenceMatrixParser(GraphParser):
             return
 
     def parse_from_graph(self, filename: str, graph: Graph) -> None:
+        """
+        """
         path = os.path.join(self.file_folder, filename)
         result = ''
         with open(path, 'w', encoding='utf-8') as file:
             file.write(result)
+
+
+graph = Graph()
+graph.parse_to_graph('from adjacency matrix.txt', AdjacencyMatrixParser(), 'vertices_names.txt')
